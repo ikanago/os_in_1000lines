@@ -1,3 +1,4 @@
+#include "common.h"
 #include "kernel.h"
 
 typedef unsigned char uint8_t;
@@ -40,10 +41,8 @@ void putchar(char ch) {
 void kernel_main(void) {
     memset(__bss, 0, (size_t)__bss_end - (size_t)__bss);
 
-    const char *s = "\n\nHello World!\n";
-    for (int i = 0; s[i] != '\0'; i++) {
-        putchar(s[i]);
-    }
+    printf("\n\nHello World!\n");
+    printf("1 + 2 = %d, %x\n", 1 + 2, 0xdeadbeef);
 
     for (;;) {
         __asm__ volatile("wfi");
