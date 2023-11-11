@@ -1,0 +1,7 @@
+---
+BasedOnStyle: Google
+IndentWidth: 4
+---
+Language: C
+AccessModifierOffset: -4
+AlignAfterOpenBracket: BlockIndent
