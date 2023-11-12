@@ -33,6 +33,11 @@ void putchar(char ch) {
     sbi_call(ch, 0, 0, 0, 0, 0, 0, 1);
 }
 
+long getchar() {
+    struct sbiret ret = sbi_call(0, 0, 0, 0, 0, 0, 0, 2);
+    return ret.error;
+}
+
 paddr_t alloc_pages(uint32_t n_pages) {
     static paddr_t next_paddr = (paddr_t)__free_ram;
     paddr_t paddr = next_paddr;
@@ -194,12 +199,43 @@ void yield(void) {
     switch_context(&prev->sp, &next->sp);
 }
 
+void handle_syscall(struct trap_frame *f) {
+    switch (f->a3) {
+        case SYS_PUTCHAR:
+            putchar(f->a0);
+            break;
+        case SYS_GETCHAR:
+            while (1) {
+                long ch = getchar();
+                if (ch >= 0) {
+                    f->a0 = ch;
+                    break;
+                }
+                yield();
+            }
+            break;
+        case SYS_EXIT:
+            printf("process %d exited\n", current_proc->pid);
+            current_proc->state = PROC_EXITED;
+            yield();
+            PANIC("unreachable");
+        default:
+            PANIC("unknown syscall a3=%d\n", f->a3);
+    }
+}
+
 void handle_trap(struct trap_frame *f) {
     uint32_t scause = READ_CSR(scause);
     uint32_t stval = READ_CSR(stval);
     uint32_t user_pc = READ_CSR(sepc);
+    if (scause == SCAUSE_ECALL) {
+        handle_syscall(f);
+        user_pc += 4;
+    } else {
+        PANIC("trap: scause = %x, stval = %x, user_pc = %x\n", scause, stval, user_pc);
+    }
 
-    PANIC("trap: scause = %x, stval = %x, user_pc = %x\n", scause, stval, user_pc);
+    WRITE_CSR(sepc, user_pc);
 }
 
 __attribute__((naked))
@@ -286,31 +322,6 @@ void kernel_entry(void) {
         "lw sp,  4 * 30(sp)\n"
         "sret\n"
     );
-}
-
-struct process *proc_a;
-struct process *proc_b;
-
-void proc_a_entry(void) {
-    printf("proc_a_entry\n");
-    for (;;) {
-        putchar('a');
-        yield();
-        for (int i = 0; i < 3000000000; i++) {
-            __asm__ volatile("nop");
-        }
-    }
-}
-
-void proc_b_entry(void) {
-    printf("proc_b_entry\n");
-    for (;;) {
-        putchar('b');
-        yield();
-        for (int i = 0; i < 3000000000; i++) {
-            __asm__ volatile("nop");
-        }
-    }
 }
 
 void kernel_main(void) {

@@ -3,6 +3,7 @@
 #define PROCS_MAX 8
 #define PROC_UNUSED 0
 #define PROC_RUNNABLE 1
+#define PROC_EXITED 2
 #define SATP_SV32 (1u << 31)
 #define PAGE_V (1u << 0) // Enable bit
 #define PAGE_R (1u << 1) // Readable
@@ -11,6 +12,7 @@
 #define PAGE_U (1u << 4) // Accessable by user
 #define USER_BASE 0x1000000
 #define SSTATUS_SPIE (1u << 5)
+#define SCAUSE_ECALL 8
 
 struct sbiret {
     long error;

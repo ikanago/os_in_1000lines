@@ -4,8 +4,8 @@ OBJCOPY = /opt/homebrew/opt/llvm/bin/llvm-objcopy
 CFLAGS = -std=c11 -O2 -g3 -Wall -Wextra --target=riscv32 -ffreestanding -nostdlib
 KERNEL_SRCS = common.c kernel.c
 KERNEL_HDRS = common.h kernel.h
-USER_SRCS = shell.c user.c
-USER_HDRS = user.h
+USER_SRCS = common.c shell.c user.c
+USER_HDRS = common.h user.h
 
 run: kernel.elf shell.elf
 	$(QEMU) -machine virt -bios default -nographic -serial mon:stdio --no-reboot -kernel kernel.elf
