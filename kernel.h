@@ -3,6 +3,14 @@
 #define PROCS_MAX 8
 #define PROC_UNUSED 0
 #define PROC_RUNNABLE 1
+#define SATP_SV32 (1u << 31)
+#define PAGE_V (1u << 0) // Enable bit
+#define PAGE_R (1u << 1) // Readable
+#define PAGE_W (1u << 2) // Writable
+#define PAGE_X (1u << 3) // Executable
+#define PAGE_U (1u << 4) // Accessable by user
+#define USER_BASE 0x1000000
+#define SSTATUS_SPIE (1u << 5)
 
 struct sbiret {
     long error;
@@ -47,6 +55,7 @@ struct process {
     int pid;
     int state;
     vaddr_t sp;
+    uint32_t *page_table;
     uint8_t stack[8192];
 };
 
